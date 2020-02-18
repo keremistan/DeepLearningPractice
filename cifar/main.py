@@ -10,8 +10,6 @@ from pprint import pprint
 import numpy as np
 from matplotlib import pyplot as pl
 
-# TODO: Batch Normalization
-# TODO: Babysitting the learning process
 # TODO: Hyperparameter Optimization
 
 # Preprocessing the data
@@ -70,12 +68,16 @@ classifier = CifarClassifier()
 mse_loss = nn.CrossEntropyLoss()
 optimizer = optim.Adam(classifier.parameters(), lr=1e-3)
 
+# Olusan kayiplarin kaydedildigi yer
+training_loss = []
+test_loss = []
+
 epochs = 3
 for epoch in range(epochs):
     for x_img, y_label in train_dl:
         prediction = classifier(x_img)
         loss = mse_loss(prediction, y_label)
-        print('Current Loss: ', loss)
+        training_loss.append(loss)
 
         loss.backward()
         optimizer.step()
@@ -85,4 +87,21 @@ for epoch in range(epochs):
         for x_test, y_test in test_dl:
             test_tahmini = classifier(x_test)
             kayip = mse_loss(test_tahmini, y_test)
-            print('Guncel Kayip: ', kayip)
+            test_loss.append(kayip)
+
+def visualise_losses(training_loss, test_loss):
+
+    pl.title('Training vs Test')
+    pl.xlabel('Epoch')
+    pl.ylabel('Loss')
+
+    plot1, = pl.plot(range(len(training_loss)), training_loss)
+    plot2, = pl.plot(range(len(test_loss)), test_loss)
+
+    pl.legend([plot1, plot2], ['Training', 'Test'])
+    pl.show()
+
+
+visualise_losses(training_loss, test_loss)
+
+# TODO: Babysitting the learning process
