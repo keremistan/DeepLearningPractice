@@ -33,7 +33,7 @@ test_path = join(target_parent_dir, target_base_dir, 'test_batch')
 batch1 = read_data(batch_1_path)
 test_batch = read_data(test_path)
 
-kullanilacak_miktar = 100
+kullanilacak_miktar = len(batch1['data'])
 training_data = batch1['data'][:kullanilacak_miktar]
 training_label = batch1['labels'][:kullanilacak_miktar]
 test_data = test_batch['data'][:2*kullanilacak_miktar]
@@ -64,20 +64,23 @@ class CifarClassifier(nn.Module):
         x = self.linear1(x)
         return x
 
+lr = 1e-2
 classifier = CifarClassifier()
 mse_loss = nn.CrossEntropyLoss()
-optimizer = optim.Adam(classifier.parameters(), lr=1e-3)
+optimizer = optim.Adam(classifier.parameters(), lr=lr)
 
 # Olusan kayiplarin kaydedildigi yer
 training_loss = []
 test_loss = []
+temp_training_loss = []
+temp_test_loss = []
 
-epochs = 3
+epochs = 5
 for epoch in range(epochs):
     for x_img, y_label in train_dl:
         prediction = classifier(x_img)
         loss = mse_loss(prediction, y_label)
-        training_loss.append(loss)
+        temp_training_loss.append(loss)
 
         loss.backward()
         optimizer.step()
@@ -87,11 +90,18 @@ for epoch in range(epochs):
         for x_test, y_test in test_dl:
             test_tahmini = classifier(x_test)
             kayip = mse_loss(test_tahmini, y_test)
-            test_loss.append(kayip)
+            temp_test_loss.append(kayip)
+    
+    training_loss.append(sum(temp_training_loss) / len(temp_training_loss))
+    test_loss.append( sum(temp_test_loss) / len(temp_test_loss) )
+    temp_test_loss = []
+    temp_training_loss = []
 
-def visualise_losses(training_loss, test_loss):
 
-    pl.title('Training vs Test')
+def visualise_losses(training_loss, test_loss, **kwargs):
+    paramsInTitle = ' '.join([key+': '+str(kwargs[key])+', ' for key in kwargs.keys()])
+    pl.title('Training vs Test ' + paramsInTitle)
+
     pl.xlabel('Epoch')
     pl.ylabel('Loss')
 
@@ -102,6 +112,4 @@ def visualise_losses(training_loss, test_loss):
     pl.show()
 
 
-visualise_losses(training_loss, test_loss)
-
-# TODO: Babysitting the learning process
+visualise_losses(training_loss, test_loss, lr=lr, epochs=epochs, numOfData=kullanilacak_miktar)
