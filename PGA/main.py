@@ -88,17 +88,16 @@ class BigEarthDataSet(Dataset):
         sorted_images = [img[1] for img in ms_images_with_band]
         return sorted_images
         
-ms_images_path = '/Users/base/MEGA/Universität/Tez Calismasi/dl_data/BigEarth1000'
-# composed_transforms = transforms.Compose([Rescale((120, 120)), ToTensor() , Normalize([0.5], [0.5])])
+ms_train_images_path = '/Users/base/MEGA/Universität/Tez Calismasi/dl_data/BigEarth1000/Train'
+ms_test_images_path = '/Users/base/MEGA/Universität/Tez Calismasi/dl_data/BigEarth1000/Test'
 composed_transforms = transforms.Compose([Rescale((120, 120)), Normalize()])
-be_dataset = BigEarthDataSet(ms_images_path, composed_transforms)
-data = DataLoader(be_dataset)
 
-for index, sample_batch in enumerate(data):
-    if index >= 50:
-        break
+be_train_dataset = BigEarthDataSet(ms_train_images_path, composed_transforms)
+be_test_dataset = BigEarthDataSet(ms_test_images_path, composed_transforms)
+train_data = DataLoader(be_train_dataset)
+test_data = DataLoader(be_test_dataset)
+
+for index, sample_batch in enumerate(train_data):
     print(sample_batch)
-
+    print('Counter: ', index)
 # TODO: Train, validation ve test olarak ayir verileri.
-
-
